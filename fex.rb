@@ -48,6 +48,7 @@ def fex(ifn, ofn)
         tags = row[TAG1, 5].reject {|t| t.nil? }
         #
         user_age = (posted-joined).floor  # in whole days
+        user_age = 180 if user_age < 0    # migrated users, assume half year
         codish = body.count(';<>()[]{}')
         body_lines = body.count("\n")
         #

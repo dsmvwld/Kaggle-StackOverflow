@@ -12,20 +12,26 @@ R=R
 
 all: submission.csv.gz model.zip
 
-model.zip: Makefile fex.rb predicto.R
+model.zip: Makefile fex.rb priors.rb predicto.R
 	zip $@ $^
 
 submission.csv.gz: submission.csv
 	cp $< x.csv
 	gzip -9 -f $<
 
-submission.csv: train-sample-f.csv public_leaderboard-f.csv predicto.R
+submission.csv: train-sample-f.csv public_leaderboard-f.csv priors.R sample-priors.R predicto.R
 	$(R) -q --no-restore --no-save <predicto.R
 
 %-f.csv: $(DATA)/%.csv fex.rb
 	$(RUBY) fex.rb $< $@
 
+priors.R: #priors.rb
+	$(RUBY) $< $(DATA)/train.csv priors >$@
+
+sample-priors.R: priors.rb
+	$(RUBY) $< $(DATA)/train-sample.csv sample.priors >$@
+
 clean:
-	rm -f *-f.csv submission.csv model.zip
+	rm -f *-f.csv *.xdr submission.* model.zip
 
 .PHONY: clean
