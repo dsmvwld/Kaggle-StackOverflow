@@ -1,5 +1,5 @@
 library(randomForest)
-epsilon <- 0.000001
+epsilon <- 0.001
 source("priors.R")
 source("sample-priors.R")
 
@@ -28,7 +28,8 @@ response <- ts$Status
 ts$Status <- NULL
 ts$PostId <- NULL
 set.seed(4711)
-rf <- randomForest(ts, response, ntree=71, classwt=priors, importance=TRUE, do.trace=TRUE)
+# retry classwt=priors...
+rf <- randomForest(ts, response, ntree=51, importance=TRUE, do.trace=TRUE)
 importance <- rf$importance
 save(importance, file="importance.xdr")
 
@@ -37,7 +38,8 @@ id <- lead$PostId
 lead$PostId <- NULL
 lead$Status <- NULL
 pred <- predict(rf, lead, type="prob")
-pred <- rescale(sample.priors, pred, priors, epsilon)
+save.image("prescale.xdr")
+pred <- rescale(sample.priors, pred, priors)
 
 result <- cbind(id, pred)
 write.csv(result, "submission.csv", quote=FALSE, row.names=FALSE)
