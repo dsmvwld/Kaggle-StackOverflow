@@ -29,7 +29,7 @@ ts$Status <- NULL
 ts$PostId <- NULL
 set.seed(4711)
 # retry classwt=priors...
-rf <- randomForest(ts, response, ntree=51, importance=TRUE, do.trace=TRUE)
+rf <- randomForest(ts, response, ntree=111, importance=TRUE, do.trace=TRUE)
 importance <- rf$importance
 save(importance, file="importance.xdr")
 
