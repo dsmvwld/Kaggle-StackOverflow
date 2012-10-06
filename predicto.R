@@ -23,22 +23,23 @@ rescale <- function(old.priors, old.posteriors, new.priors, eps=epsilon) {
   return(new.posteriors)
 }
 
+args <- commandArgs(trailingOnly=TRUE)
+
 ts <- read.csv("train-sample-f.csv")
 response <- ts$Status
 ts$Status <- NULL
 ts$PostId <- NULL
 set.seed(4711)
-# retry classwt=priors...
 rf <- randomForest(ts, response, ntree=111, importance=TRUE, do.trace=TRUE)
 importance <- rf$importance
 save(importance, file="importance.xdr")
+save(rf, file="rf.xdr")
 
-lead <- read.csv("public_leaderboard-f.csv")
+lead <- read.csv(args[1]) # read feature CSV
 id <- lead$PostId
 lead$PostId <- NULL
 lead$Status <- NULL
 pred <- predict(rf, lead, type="prob")
-save.image("prescale.xdr")
 pred <- rescale(sample.priors, pred, priors)
 
 result <- cbind(id, pred)

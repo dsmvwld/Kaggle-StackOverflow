@@ -43,7 +43,7 @@ end
 
 def tally(s)
   answer = Hash.new(0)
-  s.gsub(/[^A-Za-z0-9 ]/, '').squeeze.split.each {|w| answer[w] += 1 }
+  s.downcase.gsub(/[^a-z0-9 ]/, '').squeeze.split.each {|w| answer[w] += 1 }
   answer
 end
 
@@ -52,25 +52,53 @@ def avg_key_len(h)
   h.keys.collect {|k| k.length * h[k] }.sum / h.size
 end
 
+def word_lengths(h)
+  s, m, l = 0, 0, 0
+  x = nil
+  h.keys.each {|k|
+    x = k.length
+    if x <= 4
+      s += 1
+    elsif x <= 8
+      m += 1
+    else
+      l += 1
+    end
+  }
+  return s, m, l
+end
+
 def analyze(title, body, tags)
   answer = Hash.new
   n = body.length
-  answer[:whiteish] = body.count(" \t") / n
-  answer[:codish] = body.count(';<>()[]{}=') / n
-  answer[:upperish] = body.count('A-Z') / n
-  answer[:lowerish] = body.count('a-z') / n
-  answer[:digitish] = body.count('0-9') / n
-  answer[:punctish] = body.count('.,:!?') / n
-  answer[:markupish] = body.count('<>/') / n
+  answer[:whiteish] = body.count(" \t") * 100.0 / n
+  answer[:codish] = body.count(';<>()[]{}=') * 100.0 / n
+  answer[:upperish] = body.count('A-Z') * 100.0 / n
+  answer[:lowerish] = body.count('a-z') * 100.0 / n
+  answer[:digitish] = body.count('0-9') * 100.0 / n
+  answer[:punctish] = body.count('.,:!?') * 100.0 / n
+  answer[:markupish] = body.count('<>/') * 100.0 / n
   body_d = tally(body)
   title_d = tally(title)
   tags_d = tally(tags.join(' '))
   answer[:body_words] = body_d.values.sum
-  answer[:co_tags_body] = (tags_d.keys & body_d.keys).collect {|k| body_d[k] }.sum
-  answer[:co_tags_title] = (tags_d.keys & title_d.keys).collect {|k| body_d[k] }.sum
+  answer[:tags_vocab] = tags_d.keys.size
+  answer[:title_vocab] = title_d.keys.size
+  answer[:body_vocab] = body_d.keys.size
+  answer[:co_tags_body] = (tags_d.keys & body_d.keys).size  #.collect {|k| body_d[k] }.sum
+  answer[:co_tags_title] = (tags_d.keys & title_d.keys).size
+  answer[:co_title_body] = (title_d.keys & body_d.keys).size
   answer[:avg_body_word_len] = avg_key_len(body_d)
   answer[:avg_title_word_len] = avg_key_len(title_d)
   answer[:avg_tags_word_len] = avg_key_len(tags_d)
+  s, m, l = word_lengths(body_d)
+  answer[:words_s_body] = s
+  answer[:words_m_body] = m
+  answer[:words_l_body] = l
+  s, m, l = word_lengths(title_d)
+  answer[:words_s_title] = s
+  answer[:words_m_title] = m
+  answer[:words_l_title] = l
   answer
 end
 
@@ -92,6 +120,7 @@ def fex(ifn, ofn)
         user_age_h = ((posted-joined)*24).floor
         user_age_h = 180*24 if user_age_h < 0
         body_lines = body.count("\n")
+        # FIXME body is still in Markdown format, should convert or strip
         textish = analyze(title, body, tags)
         #
         out << [row[POST_ID], row[USER_REPUTATION], row[USER_ANSWERS],
@@ -101,8 +130,12 @@ def fex(ifn, ofn)
           textish[:whiteish], textish[:codish], textish[:upperish],
           textish[:lowerish], textish[:digitish], textish[:punctish],
           textish[:markupish],
-          textish[:body_words], textish[:co_tags_body], textish[:co_tags_title],
+          textish[:body_words],
+          textish[:body_vocab], textish[:title_vocab], textish[:tags_vocab],
+          textish[:co_tags_body], textish[:co_tags_title], textish[:co_title_body],
           textish[:avg_body_word_len], textish[:avg_title_word_len], textish[:avg_tags_word_len],
+          textish[:words_s_body], textish[:words_m_body], textish[:words_l_body],
+          textish[:words_s_title], textish[:words_m_title], textish[:words_l_title],
           user_age_d, user_age_h, row[STATUS]]
       else
         order = Hash.new
@@ -114,8 +147,12 @@ def fex(ifn, ofn)
           Whiteish Codeish Upperish
           Lowerish Digitish Punctish
           Markupish
-          BodyWords CoTagsBody CoTagsTitle
+          BodyWords
+          BodyVocab TitleVocab TagsVocab
+          CoTagsBody CoTagsTitle CoTitleBody
           AvgBodyWordLen AvgTitleWordLen AvgTagsWordLen
+          WordsSBody WordsMBody WordsLBody
+          WordsSTitle WordsMTitle WordsLTitle
           UserAgeDays UserAgeHours Status)
       end
     }

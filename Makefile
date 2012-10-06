@@ -2,7 +2,11 @@
 # hh 24aug12
 
 # location of training and leaderboard files
-DATA=data
+DATA=./data
+
+# leaderboard selector
+PREFIX=public
+#PREFIX=private
 
 # needs Ruby 1.9
 RUBY=ruby
@@ -19,8 +23,8 @@ submission.csv.gz: submission.csv
 	cp $< x.csv
 	gzip -9 -f $<
 
-submission.csv: train-sample-f.csv public_leaderboard-f.csv priors.R sample-priors.R predicto.R
-	$(R) -q --no-restore --no-save <predicto.R
+submission.csv: train-sample-f.csv $(PREFIX)_leaderboard-f.csv priors.R sample-priors.R predicto.R
+	$(R) -q --no-restore --no-save --args $(PREFIX)_leaderboard-f.csv <predicto.R
 
 %-f.csv: $(DATA)/%.csv fex.rb
 	$(RUBY) fex.rb $< $@
