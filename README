@@ -1,0 +1,16 @@
+REQUIREMENTS
+
+- Ruby 1.9
+- R 2.14 (or so)
+- CRAN randomForest library (4.6 or so)
+
+- train-sample.csv in $(DATA) directory (cf. Makefile)
+- $(PREFIX)_leaderboard.csv in $(DATA) directory (cf. Makefile)
+
+CONFIGURATION
+
+In the Makefile, modify variables DATA and maybe PREFIX to point to data
+file location and -- if necessary -- switch between "public" and "private"
+leaderboard file prefix.
+
+Invoke make to create submission.csv.gz
