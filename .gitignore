@@ -3,4 +3,6 @@ benchmarks
 data
 other
 submissions
+*.log
+*.par
 *~

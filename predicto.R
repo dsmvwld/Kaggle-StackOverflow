@@ -25,7 +25,7 @@ rescale <- function(old.priors, old.posteriors, new.priors, eps=epsilon) {
 
 args <- commandArgs(trailingOnly=TRUE)
 
-ts <- read.csv("train-sample-f.csv")
+ts <- read.csv("train-sample_October_9_2012_v2-f.csv")
 response <- ts$Status
 ts$Status <- NULL
 ts$PostId <- NULL
